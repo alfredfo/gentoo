@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit flag-o-matic toolchain-funcs prefix
+inherit cross flag-o-matic toolchain-funcs prefix
 if [[ ${PV} == "9999" ]] ; then
 	EGIT_REPO_URI="git://git.musl-libc.org/musl"
 	inherit git-r3
@@ -25,14 +25,6 @@ SRC_URI+="
 	https://dev.gentoo.org/~blueness/musl-misc/iconv.c
 "
 
-export CBUILD=${CBUILD:-${CHOST}}
-export CTARGET=${CTARGET:-${CHOST}}
-if [[ ${CTARGET} == ${CHOST} ]] ; then
-	if [[ ${CATEGORY} == cross-* ]] ; then
-		export CTARGET=${CATEGORY#cross-}
-	fi
-fi
-
 DESCRIPTION="Light, fast and simple C library focused on standards-conformance and safety"
 HOMEPAGE="https://musl.libc.org"
 
@@ -49,16 +41,12 @@ QA_PRESTRIPPED="usr/lib/crtn.o"
 # built as part as crossdev. Also, elide the blockers when in cross-*,
 # as it doesn't make sense to block the normal CBUILD libxcrypt at all
 # there when we're installing into /usr/${CHOST} anyway.
-if [[ ${CATEGORY} == cross-* ]] ; then
+if [[ ${CATEGORY} == cross-* ]] || [[ ${CATEGORY} == cross_llvm-* ]] ; then
 	IUSE="${IUSE/crypt/+crypt}"
 else
 	RDEPEND="crypt? ( !sys-libs/libxcrypt[system] )"
 	PDEPEND="!crypt? ( sys-libs/libxcrypt[system] )"
 fi
-
-is_crosscompile() {
-	[[ ${CHOST} != ${CTARGET} ]]
-}
 
 just_headers() {
 	use headers-only && is_crosscompile
@@ -121,7 +109,7 @@ src_compile() {
 	just_headers && return 0
 
 	emake
-	if [[ ${CATEGORY} != cross-* ]] ; then
+	if [[ ${CATEGORY} != cross-* ]] && [[ ${CATEGORY} != cross_llvm-* ]] ; then
 		emake -C "${T}" getconf getent iconv \
 			CC="$(tc-getCC)" \
 			CFLAGS="${CFLAGS}" \
@@ -152,7 +140,7 @@ src_install() {
 		rm "${ED}/usr/$(get_libdir)/libcrypt.a" || die
 	fi
 
-	if [[ ${CATEGORY} != cross-* ]] ; then
+	if [[ ${CATEGORY} != cross-* ]] && [[ ${CATEGORY} != cross_llvm-* ]] ; then
 		# Fish out of config:
 		#   ARCH = ...
 		#   SUBARCH = ...
