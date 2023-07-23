@@ -22,7 +22,7 @@ _TOOLCHAIN_ECLASS=1
 DESCRIPTION="The GNU Compiler Collection"
 HOMEPAGE="https://gcc.gnu.org/"
 
-inherit edo flag-o-matic gnuconfig libtool multilib pax-utils toolchain-funcs prefix
+inherit cross edo flag-o-matic gnuconfig libtool multilib pax-utils toolchain-funcs prefix
 
 tc_is_live() {
 	[[ ${PV} == *9999* ]]
@@ -55,10 +55,6 @@ fi
 : "${TARGET_ABI:=${ABI}}"
 : "${TARGET_MULTILIB_ABIS:=${MULTILIB_ABIS}}"
 : "${TARGET_DEFAULT_ABI:=${DEFAULT_ABI}}"
-
-is_crosscompile() {
-	[[ ${CHOST} != ${CTARGET} ]]
-}
 
 # @FUNCTION: tc_version_is_at_least
 # @USAGE: ver1 [ver2]

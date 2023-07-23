@@ -294,8 +294,12 @@ esac
 [[ ${PROFILE_ARCH} == ppc64 ]] && CHOST="powerpc64-${CHOST#*-}"
 
 export CTARGET=${CTARGET:-${CHOST}}
-if [[ ${CTARGET} == ${CHOST} && ${CATEGORY/cross-} != ${CATEGORY} ]]; then
-	export CTARGET=${CATEGORY/cross-}
+if [[ ${CTARGET} == ${CHOST} ]] ; then
+	if [[ ${CATEGORY/cross-} != ${CATEGORY} ]] ; then
+		export CTARGET=${CATEGORY/cross-}
+	elif [[ ${CATEGORY/cross_llvm-} != ${CATEGORY} ]] ; then
+		export CTARGET=${CATEGORY/cross_llvm-}
+	fi
 fi
 
 HOMEPAGE="https://www.kernel.org/ https://wiki.gentoo.org/wiki/Kernel ${HOMEPAGE}"
@@ -514,7 +518,7 @@ detect_version() {
 		# This is because upstream releases with a completely different
 		# versioning scheme.
 		case ${PN/-*} in
-		     wolk) K_USEPV=1;;
+			 wolk) K_USEPV=1;;
 		  vserver) K_USEPV=1;;
 		esac
 
@@ -1074,14 +1078,14 @@ unipatch() {
 			extension=${extension/:*/}
 			PIPE_CMD=""
 			case ${extension} in
-				     xz) PIPE_CMD="xz -T$(makeopts_jobs) -dc";;
+					 xz) PIPE_CMD="xz -T$(makeopts_jobs) -dc";;
 				   lzma) PIPE_CMD="lzma -dc";;
-				    bz2) PIPE_CMD="bzip2 -dc";;
+					bz2) PIPE_CMD="bzip2 -dc";;
 				 patch*) PIPE_CMD="cat";;
 				   diff) PIPE_CMD="cat";;
 				 gz|Z|z) PIPE_CMD="gzip -dc";;
 				ZIP|zip) PIPE_CMD="unzip -p";;
-				      *) UNIPATCH_DROP="${UNIPATCH_DROP} ${i/:*/}";;
+					  *) UNIPATCH_DROP="${UNIPATCH_DROP} ${i/:*/}";;
 			esac
 
 			PATCH_LEVEL=${i/*([^:])?(:)}
